@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
-using LibraryManagement.API.DTOs.Author;
-using LibraryManagement.API.DTOs.Book;
-using LibraryManagement.API.DTOs.Borrow;
-using LibraryManagement.API.DTOs.Member;
-using LibraryManagement.API.Models;
+using Entities.Models;
+using ServiceContract.DTOs.Author;
+using ServiceContract.DTOs.Book;
+using ServiceContract.DTOs.Borrow;
+using ServiceContract.DTOs.Member;
+
 
 namespace LibraryManagement.API.AutoMapper___Profiles
 {

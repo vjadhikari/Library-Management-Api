@@ -1,8 +1,9 @@
-
-using LibraryManagement.API.Data;
-using LibraryManagement.API.Repositories;
-using LibraryManagement.API.Repositories.Interfaces;
+using Entities.Data;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
+using RepositoryContract;
+using ServiceContract.Interfaces;
+using Services;
 
 namespace LibraryManagement.API
 {
@@ -19,11 +20,13 @@ namespace LibraryManagement.API
                 options.UseSqlServer(builder.Configuration.GetConnectionString("library"));
             });
 
-            builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-            builder.Services.AddScoped<IBookRepository, BookRepository>();
-            builder.Services.AddScoped<IBorrowRepository, BorrowRepository>();
+            builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
+            builder.Services.AddScoped<IAuthorService, AuthorService>();
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<IBorroweService, BorrowService>();
+            builder.Services.AddScoped<IBorroweService, BorrowService>();
+            builder.Services.AddScoped<IBorrowerRepository, BorrowerRepository>();
             builder.Services.AddScoped<IMemberRepository, MemberRepository>();
-
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
             builder.Services.AddSwaggerGen();
