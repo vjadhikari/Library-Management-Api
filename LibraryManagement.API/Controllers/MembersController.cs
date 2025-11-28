@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using LibraryManagement.API.DTOs.Member;
-using LibraryManagement.API.Repositories.Interfaces;
+using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
-using Member = LibraryManagement.API.Models.Member;
+using ServiceContract.DTOs.Member;
+using ServiceContract.Interfaces;
+using Services;
 
 namespace LibraryManagement.API.Controllers
 {
@@ -10,58 +11,96 @@ namespace LibraryManagement.API.Controllers
     [ApiController]
     public class MemberController : ControllerBase
     {
-        private readonly IMemberRepository _memberRepository;
+        private readonly IMemberService _memberService;
         private readonly IMapper _mapper;
 
-        public MemberController(IMemberRepository memberRepository, IMapper mapper)
+        public MemberController(IMemberService memberService, IMapper mapper)
         {
-            _memberRepository = memberRepository;
+            _memberService = memberService;
             _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetAll()
         {
-            var members = await _memberRepository.GetAllAsync();
+            List<Member>? members = null;
+            try
+            {
+                members = await _memberService.GetAllMembers();
+            }
+            catch (Exception ex)
+            {
+                members = new List<Member>();
+            }
             return Ok(_mapper.Map<IEnumerable<MemberDto>>(members));
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<MemberDto>> GetById(int id)
         {
-            var member = await _memberRepository.GetByIdAsync(id);
-            if (member == null) return NotFound();
+            Member? member = null;
+            try
+            {
+                member = await _memberService.GetMemberById(id);
+                if (member == null) return NotFound();
+            }
+            catch (Exception)
+            {
+                member = new Member();
+            }
             return Ok(_mapper.Map<MemberDto>(member));
         }
 
         [HttpPost]
         public async Task<ActionResult<MemberDto>> Create(CreateMemberDto createMemberDto)
         {
-            var member = _mapper.Map<Member>(createMemberDto);
-            await _memberRepository.AddAsync(member);
+            Member? member = null;
+            try
+            {
+                member = _mapper.Map<Member>(createMemberDto);
+                await _memberService.AddMember(member);
+            }
+            catch (Exception)
+            {
+                member = new Member();
+            }
             return CreatedAtAction(nameof(GetById), new { id = member.Id }, _mapper.Map<MemberDto>(member));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateMemberDto updateMemberDto)
         {
-            if (!await _memberRepository.ExistsAsync(id)) return NotFound();
+            try
+            {
+                Member? member = new Member();
+                _mapper.Map(updateMemberDto, member);
+                if (await _memberService.UpdateMember(id, member))
+                {
+                    return NoContent();
+                }
+            }
+            catch (Exception)
+            {
 
-            var member = await _memberRepository.GetByIdAsync(id);
-            _mapper.Map(updateMemberDto, member);
-
-            await _memberRepository.UpdateAsync(member);
-            return NoContent();
+            }
+            return NotFound();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var member = await _memberRepository.GetByIdAsync(id);
-            if (member == null) return NotFound();
+            try
+            {
+                if (await _memberService.DeleteMember(id))
+                {
+                    return NoContent();
+                }
+            }
+            catch (Exception)
+            {
 
-            await _memberRepository.DeleteAsync(member);
-            return NoContent();
+            }
+            return NotFound();
         }
     }
 }
